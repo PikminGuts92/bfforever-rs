@@ -1,0 +1,9 @@
+[package]
+name = "songfuse"
+version = "0.1.0"
+authors = ["PikminGuts92"]
+edition = "2021"
+
+[dependencies]
+bfforever = { path = "../bfforever" }
+clap = { version = "3.0.4", features = ["derive"] }
