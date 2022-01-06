@@ -5,3 +5,4 @@ authors = ["PikminGuts92"]
 edition = "2021"
 
 [dependencies]
+log = "0.4.11"

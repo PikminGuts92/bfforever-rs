@@ -1,5 +1,6 @@
 use crate::apps::{SubApp};
 use clap::Parser;
+use log::debug;
 
 #[derive(Parser)]
 pub struct AudioApp {
@@ -14,6 +15,8 @@ impl SubApp for AudioApp {
         // clt -> clt - decrypt
         // clt -> wav - decode
         // wav -> clt - encode
+        debug!("Processing audio: {}", &self.input_path);
+
         print!("Wrote output to \"{}\"", &self.output_path);
     }
 }

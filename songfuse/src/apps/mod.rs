@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 
-mod audio_decrypt;
-pub use self::audio_decrypt::*;
+mod audio;
+pub use self::audio::*;
 
 // From Cargo.toml
 const PKG_AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
