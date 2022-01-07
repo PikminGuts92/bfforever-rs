@@ -20,6 +20,9 @@ impl SubApp for AudioApp {
 
         // Assume input is celt
         let mut celt_audio = Celt::from_path(&self.input_path);
+        celt_audio.decrypt();
+
+        celt_audio.save(&self.output_path);
 
         print!("Wrote output to \"{}\"", &self.output_path);
     }
