@@ -218,6 +218,20 @@ impl Celt {
         // Update value
         self.header.encrypted = false;
     }
+
+    pub fn encrypt(&mut self) {
+        if self.is_encrypted() {
+            return;
+        }
+
+        // Encrypt data
+        let data_size = self.data.len();
+        let cipher = Aes256Ecb::new_from_slices(&AES_KEY, &[0u8; 16]).unwrap();
+        cipher.encrypt(&mut self.data, data_size).unwrap();
+
+        // Update value
+        self.header.encrypted = true;
+    }
 }
 
 impl Default for CeltHeader {
