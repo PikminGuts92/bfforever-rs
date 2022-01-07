@@ -1,4 +1,5 @@
 use crate::apps::{SubApp};
+use bfforever::audio::*;
 use clap::Parser;
 use log::debug;
 
@@ -16,6 +17,9 @@ impl SubApp for AudioApp {
         // clt -> wav - decode
         // wav -> clt - encode
         debug!("Processing audio: {}", &self.input_path);
+
+        // Assume input is celt
+        let mut celt_audio = Celt::from_path(&self.input_path);
 
         print!("Wrote output to \"{}\"", &self.output_path);
     }
