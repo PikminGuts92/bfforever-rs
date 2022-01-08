@@ -12,11 +12,11 @@ impl AudioDecoder for Celt {
         let frame_Size = self.get_frame_size();
         let sample_rate = self.get_sample_rate();*/
 
-        let CeltHeader { total_samples, bitrate, frame_size, sample_rate, .. } = self.header;
-        let channel_count = self.get_channels() as usize;
-        let calc_frame_size = (frame_size as u32 * channel_count as u32) as usize;
+        let CeltHeader { total_samples, frame_size, sample_rate, .. } = self.header;
+        let channels = self.get_channels() as usize;
+        let calc_frame_size = (frame_size as u32 * channels as u32) as usize;
 
-        let mut samples = vec![0i16; (total_samples * channel_count as u32) as usize].into_boxed_slice();
+        let mut samples = vec![0i16; (total_samples * channels as u32) as usize].into_boxed_slice();
 
         let sample_rate = match sample_rate {
              8000 => SampleRate::Hz8000,
@@ -27,7 +27,7 @@ impl AudioDecoder for Celt {
                 _ => panic!("Unsupported sample rate of {}Hz", sample_rate), // TODO: Switch to result error?
         };
 
-        let channels = match channel_count {
+        let channels = match channels {
             1 => Channels::Mono,
             2 => Channels::Stereo,
             _ => Channels::Auto,
@@ -36,7 +36,7 @@ impl AudioDecoder for Celt {
         let mut decoder = Decoder::new(sample_rate, channels).unwrap();
 
         for raw_packet in packets.iter() {
-            let data_start = raw_packet.frame_offset * channel_count;
+            let data_start = calc_frame_size * raw_packet.frame_offset;
 
             let buffer = &mut samples[data_start..(data_start + calc_frame_size)];
             decoder.decode(Some(raw_packet.data), buffer, false).unwrap();
