@@ -1,8 +1,9 @@
+use crate::io::create_new_file;
 use nom::{Err, IResult, Needed};
 use nom::bytes::streaming::tag;
 use nom::number::streaming::{le_u8, le_u16, le_u32};
 use nom::sequence::{pair, terminated, tuple};
-use std::fs::{copy, create_dir_all, File, read, remove_dir_all, remove_file, write};
+use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::size_of;
 use std::path::{Path, PathBuf};
@@ -142,24 +143,7 @@ impl IOFile for Celt {
     fn save<T: AsRef<Path>>(&self, celt_path: T) {
         let celt_path = celt_path.as_ref();
 
-        if !celt_path.is_file() {
-            // TODO: Throw error?
-        }
-
-        // Create directory
-        if let Some(output_dir) = celt_path.parent() {
-            if !output_dir.exists() {
-                create_dir_all(&output_dir).unwrap();
-            }
-        }
-
-        // Delete old file
-        if celt_path.exists() {
-            // TODO: Investigate better approach to guarantee deletion
-            remove_file(celt_path).unwrap();
-        }
-
-        let mut celt_file = File::create(celt_path).unwrap();
+        let mut celt_file = create_new_file(celt_path).unwrap();
 
         let mut header_data = [0u8; 40];
         self.header.write_to_slice(&mut header_data);
