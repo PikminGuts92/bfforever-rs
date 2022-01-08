@@ -21,9 +21,22 @@ struct CeltHeader {
     pub packets_size: u32,
 }
 
+struct PacketInfo {
+    frame_offset: usize,
+    data_offset: usize,
+    size: usize,
+}
+
+pub(crate) struct RawPacket<'a> {
+    frame_offset: usize,
+    data: &'a[u8],
+}
+
+#[derive(Default)]
 pub struct Celt {
     header: CeltHeader,
     data: Box<[u8]>,
+    packet_map: Vec<PacketInfo>,
 }
 
 impl CeltHeader {
@@ -50,5 +63,80 @@ impl Default for CeltHeader {
             packets_start_offset: 40,
             packets_size: 0
         }
+    }
+}
+
+impl Celt {
+    pub(crate) fn recompute_offsets(&mut self) {
+        self.packet_map.clear();
+
+        let (map_data, packet_data) = self.data.split_at(self.header.map_size as usize);
+
+        let mut frame_idx = 0;
+        let mut prev_count_part = None;
+        let mut silence = true;
+
+        let mut map = Vec::new(); // (frame index, # packets)
+
+        for m in map_data.iter() {
+            if let Some(s) = prev_count_part {
+                let count = s | (*m as usize);
+                if !silence {
+                    map.push((frame_idx, count));
+                }
+
+                frame_idx += count;
+                prev_count_part = None;
+                silence = !silence;
+
+                continue;
+            }
+
+            let count = *m as usize;
+            if (count & 0x80) != 0 {
+                prev_count_part = Some((count ^ 0x80) << 8);
+            } else {
+                if !silence {
+                    map.push((frame_idx, count));
+                }
+
+                frame_idx += count;
+                prev_count_part = None;
+                silence = !silence;
+            }
+        }
+
+        let mut data_index = 0;
+
+        for (frame_start, num_packets) in map.iter() {
+            let mut frame_index = *frame_start;
+
+            for _ in 0..*num_packets {
+                let packet_size = (((packet_data[data_index] & 0x0F) as usize) << 8) | packet_data[data_index + 1] as usize;
+
+                self.packet_map.push(PacketInfo {
+                    frame_offset: frame_index,
+                    data_offset: data_index + 2,
+                    size: packet_size,
+                });
+
+                data_index += packet_size + 2;
+                frame_index += 1;
+            }
+        }
+    }
+
+    pub(crate) fn get_raw_packets<'a>(&'a mut self) -> Vec<RawPacket<'a>> {
+        let (_, packet_data) = self.data.split_at(self.header.map_size as usize);
+
+        self.packet_map
+            .iter()
+            .map(|m| {
+                RawPacket {
+                    frame_offset: m.frame_offset,
+                    data: &packet_data[m.data_offset..(m.data_offset + m.size)],
+                }
+            })
+            .collect()
     }
 }

@@ -38,6 +38,9 @@ impl Crypt for Celt {
 
         // Update value
         self.header.encrypted = false;
+
+        // Update offsets
+        self.recompute_offsets();
     }
 
     fn encrypt(&mut self) {

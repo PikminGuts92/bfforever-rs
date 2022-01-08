@@ -6,7 +6,7 @@ use std::fs::{copy, create_dir_all, File, read, remove_dir_all, remove_file, wri
 use std::io::{Read, Write};
 use std::mem::size_of;
 use std::path::{Path, PathBuf};
-use super::{Celt, CeltHeader};
+use super::{Celt, CeltHeader, Crypt};
 
 pub struct ByteWriter<'a>(&'a mut [u8]);
 
@@ -126,10 +126,17 @@ impl IOFile for Celt {
         let mut data = vec![0u8; data_size].into_boxed_slice();
         celt_file.read_exact(&mut data).unwrap();
 
-        Celt {
+        let mut celt = Celt {
             header,
-            data
+            data,
+            ..Default::default()
+        };
+
+        if !celt.is_encrypted() {
+            celt.recompute_offsets();
         }
+
+        celt
     }
 
     fn save<T: AsRef<Path>>(&self, celt_path: T) {
