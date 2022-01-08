@@ -19,7 +19,7 @@ impl SubApp for AudioApp {
         debug!("Processing audio: {}", &self.input_path);
 
         // Assume input is celt
-        let mut celt_audio = Celt::from_path(&self.input_path);
+        let mut celt_audio = Celt::open(&self.input_path);
         celt_audio.decrypt();
 
         celt_audio.save(&self.output_path);

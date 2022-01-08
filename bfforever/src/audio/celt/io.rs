@@ -1,11 +1,3 @@
-use aes::{Aes256, Block, ParBlocks};
-use aes::cipher::{
-    BlockCipher, BlockEncrypt, BlockDecrypt, NewBlockCipher,
-    generic_array::GenericArray,
-};
-use block_modes::{BlockMode, Ecb};
-use block_modes::block_padding::NoPadding;
-use core::num;
 use nom::{Err, IResult, Needed};
 use nom::bytes::streaming::tag;
 use nom::number::streaming::{le_u8, le_u16, le_u32};
@@ -14,46 +6,37 @@ use std::fs::{copy, create_dir_all, File, read, remove_dir_all, remove_file, wri
 use std::io::{Read, Write};
 use std::mem::size_of;
 use std::path::{Path, PathBuf};
+use super::{Celt, CeltHeader};
 
-const AES_KEY: [u8; 32] = [
-    0x07, 0xc2, 0x30, 0x93, 0x4a, 0x52, 0xf1, 0x72,
-    0x1a, 0xa2, 0x77, 0x52, 0xa6, 0x72, 0x43, 0x75,
-    0xe8, 0xff, 0xe1, 0x7e, 0x93, 0xef, 0xcc, 0xa5,
-    0x14, 0x37, 0xde, 0x7f, 0x31, 0x1c, 0xd2, 0x45
-];
+pub struct ByteWriter<'a>(&'a mut [u8]);
 
-type Aes256Ecb = Ecb<Aes256, NoPadding>;
+impl<'a> ByteWriter<'a> {
+    fn new(data: &'a mut [u8]) -> ByteWriter<'a> {
+        ByteWriter(data)
+    }
 
-struct CeltHeader {
-    pub version: u16,
-    pub encrypted: bool,
-    pub total_samples: u32,
-    pub bitrate: u32,
+    fn write_u16(self, num: u16) -> ByteWriter<'a> {
+        let ByteWriter(data) = self;
 
-    pub frame_size: u16,
-    pub look_ahead: u16,
-    pub sample_rate: u16,
-    pub unknown: u16,
+        data[..size_of::<u16>()].copy_from_slice(&num.to_le_bytes());
+        ByteWriter(&mut data[size_of::<u16>()..])
+    }
 
-    pub map_start_offset: u32,
-    pub map_size: u32,
-    pub packets_start_offset: u32,
-    pub packets_size: u32,
+    fn write_u32(self, num: u32) -> ByteWriter<'a> {
+        let ByteWriter(data) = self;
+
+        data[..size_of::<u32>()].copy_from_slice(&num.to_le_bytes());
+        ByteWriter(&mut data[size_of::<u32>()..])
+    }
 }
 
-pub struct Celt {
-    header: CeltHeader,
-    data: Box<[u8]>,
+pub trait IOFile {
+    fn open<T: AsRef<Path>>(celt_path: T) -> Self;
+    fn save<T: AsRef<Path>>(&self, celt_path: T);
 }
 
 impl CeltHeader {
-    fn from_data(data: &[u8]) -> CeltHeader {
-        // TODO: Handle errors
-        let (_, header) = CeltHeader::parse_data(data).unwrap();
-        header
-    }
-
-    fn parse_data<'a>(data: &'a [u8]) -> IResult<&'a [u8], CeltHeader> {
+    pub fn parse_data<'a>(data: &'a [u8]) -> IResult<&'a [u8], CeltHeader> {
         let (d, _) = tag("BFAD")(data)?;
         let (d, (
             version,
@@ -99,7 +82,7 @@ impl CeltHeader {
         }))
     }
 
-    fn write_to_slice(&self, data: &mut [u8; 40]) {
+    pub fn write_to_slice(&self, data: &mut [u8; 40]) {
         // Write magic
         data[..4].copy_from_slice(b"BFAD");
 
@@ -120,30 +103,8 @@ impl CeltHeader {
     }
 }
 
-struct ByteWriter<'a>(&'a mut [u8]);
-
-impl<'a> ByteWriter<'a> {
-    fn new(data: &'a mut [u8]) -> ByteWriter<'a> {
-        ByteWriter(data)
-    }
-
-    fn write_u16(self, num: u16) -> ByteWriter<'a> {
-        let ByteWriter(data) = self;
-
-        data[..size_of::<u16>()].copy_from_slice(&num.to_le_bytes());
-        ByteWriter(&mut data[size_of::<u16>()..])
-    }
-
-    fn write_u32(self, num: u32) -> ByteWriter<'a> {
-        let ByteWriter(data) = self;
-
-        data[..size_of::<u32>()].copy_from_slice(&num.to_le_bytes());
-        ByteWriter(&mut data[size_of::<u32>()..])
-    }
-}
-
-impl Celt {
-    pub fn from_path<T: AsRef<Path>>(celt_path: T) -> Celt {
+impl IOFile for Celt {
+    fn open<T: AsRef<Path>>(celt_path: T) -> Celt {
         let mut celt_file = File::open(celt_path).unwrap();
         //let file_size = celt_file.metadata().unwrap().len();
         // TODO: Check file size before reading?
@@ -171,7 +132,7 @@ impl Celt {
         }
     }
 
-    pub fn save<T: AsRef<Path>>(&self, celt_path: T) {
+    fn save<T: AsRef<Path>>(&self, celt_path: T) {
         let celt_path = celt_path.as_ref();
 
         if !celt_path.is_file() {
@@ -200,55 +161,5 @@ impl Celt {
         celt_file.write(&self.data).unwrap();
 
         // TODO: Return result
-    }
-
-    pub fn is_encrypted(&self) -> bool {
-        self.header.encrypted
-    }
-
-    pub fn decrypt(&mut self) {
-        if !self.is_encrypted() {
-            return;
-        }
-
-        // Decrypt data
-        let cipher = Aes256Ecb::new_from_slices(&AES_KEY, &[0u8; 16]).unwrap();
-        cipher.decrypt(&mut self.data).unwrap();
-
-        // Update value
-        self.header.encrypted = false;
-    }
-
-    pub fn encrypt(&mut self) {
-        if self.is_encrypted() {
-            return;
-        }
-
-        // Encrypt data
-        let data_size = self.data.len();
-        let cipher = Aes256Ecb::new_from_slices(&AES_KEY, &[0u8; 16]).unwrap();
-        cipher.encrypt(&mut self.data, data_size).unwrap();
-
-        // Update value
-        self.header.encrypted = true;
-    }
-}
-
-impl Default for CeltHeader {
-    fn default() -> CeltHeader {
-        CeltHeader {
-            version: 2,
-            encrypted: false,
-            total_samples: 0,
-            bitrate: 96000,
-            frame_size: 960,
-            look_ahead: 312,
-            sample_rate: 48000,
-            unknown: 1,
-            map_start_offset: 40,
-            map_size: 0,
-            packets_start_offset: 40,
-            packets_size: 0
-        }
     }
 }
