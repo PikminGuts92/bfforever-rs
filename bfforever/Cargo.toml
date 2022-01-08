@@ -6,6 +6,8 @@ edition = "2021"
 
 [dependencies]
 aes = "0.7.5"
+audiopus = "0.2"
 block-modes = "0.8.1"
 log = "0.4.11"
 nom = "7.1.0"
+rayon = "1.5"

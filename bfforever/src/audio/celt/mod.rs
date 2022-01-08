@@ -1,9 +1,12 @@
 mod crypt;
+mod decode;
 mod io;
 
 pub use crypt::*;
+pub use decode::*;
 pub use io::IOFile;
 
+#[derive(Clone, Copy)]
 struct CeltHeader {
     pub version: u16,
     pub encrypted: bool,
@@ -67,6 +70,26 @@ impl Default for CeltHeader {
 }
 
 impl Celt {
+    pub const fn get_channels(&self) -> u32 {
+        2
+    }
+
+    pub fn get_total_samples(&self) -> u32 {
+        self.header.total_samples
+    }
+
+    pub fn get_bitrate(&self) -> u32 {
+        self.header.bitrate
+    }
+
+    pub fn get_frame_size(&self) -> u16 {
+        self.header.frame_size
+    }
+
+    pub fn get_sample_rate(&self) -> u16 {
+        self.header.sample_rate
+    }
+
     pub(crate) fn recompute_offsets(&mut self) {
         self.packet_map.clear();
 
@@ -126,7 +149,7 @@ impl Celt {
         }
     }
 
-    pub(crate) fn get_raw_packets<'a>(&'a mut self) -> Vec<RawPacket<'a>> {
+    pub(crate) fn get_raw_packets<'a>(&'a self) -> Vec<RawPacket<'a>> {
         let (_, packet_data) = self.data.split_at(self.header.map_size as usize);
 
         self.packet_map
