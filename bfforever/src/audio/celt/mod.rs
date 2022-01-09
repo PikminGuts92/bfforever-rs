@@ -93,7 +93,8 @@ impl Celt {
     pub(crate) fn recompute_offsets(&mut self) {
         self.packet_map.clear();
 
-        let (map_data, packet_data) = self.data.split_at(self.header.map_size as usize);
+        let actual_map_size = self.header.packets_start_offset - self.header.map_start_offset; // Multiple of 4
+        let (map_data, packet_data) = self.data.split_at(actual_map_size as usize);
 
         let mut frame_idx = 0;
         let mut prev_count_part = None;
@@ -101,7 +102,7 @@ impl Celt {
 
         let mut map = Vec::new(); // (frame index, # packets)
 
-        for m in map_data.iter() {
+        for m in map_data.iter().take(self.header.map_size as usize) {
             if let Some(s) = prev_count_part {
                 let count = s | (*m as usize);
                 if !silence {
@@ -150,7 +151,8 @@ impl Celt {
     }
 
     pub(crate) fn get_raw_packets<'a>(&'a self) -> Vec<RawPacket<'a>> {
-        let (_, packet_data) = self.data.split_at(self.header.map_size as usize);
+        let actual_map_size = self.header.packets_start_offset - self.header.map_start_offset; // Multiple of 4
+        let (_, packet_data) = self.data.split_at(actual_map_size as usize);
 
         self.packet_map
             .iter()

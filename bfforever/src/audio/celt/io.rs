@@ -115,7 +115,8 @@ impl IOFile for Celt {
 
         let header = CeltHeader::from_data(&header_data);
 
-        let mut data_size = (header.map_size + header.packets_size) as usize;
+        let actual_map_size = header.packets_start_offset - header.map_start_offset; // Multiple of 4
+        let mut data_size = (actual_map_size + header.packets_size) as usize;
         let rem = data_size % 16;
 
         if rem > 0 {
