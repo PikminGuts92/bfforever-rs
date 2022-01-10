@@ -2,15 +2,17 @@ use audiopus::coder::Decoder;
 use audiopus::{Channels, MutSignals, SampleRate};
 use audiopus::packet::Packet;
 use crate::audio::AudioDecoder;
+use rayon::prelude::*;
 use super::{Celt, CeltHeader};
+
+struct ValuesPtr<T>(*mut [T]);
+
+unsafe impl<T> Send for ValuesPtr<T> {}
+unsafe impl<T> Sync for ValuesPtr<T> {}
 
 impl AudioDecoder for Celt {
     fn decode(&self) -> Box<[i16]> {
         let packets = self.get_raw_packets();
-        /*let total_samples = self.get_total_samples();
-        let bitrate = self.get_bitrate();
-        let frame_Size = self.get_frame_size();
-        let sample_rate = self.get_sample_rate();*/
 
         let CeltHeader { total_samples, frame_size, sample_rate, .. } = self.header;
         let channels = self.get_channels() as usize;
@@ -33,14 +35,21 @@ impl AudioDecoder for Celt {
             _ => Channels::Auto,
         };
 
-        let mut decoder = Decoder::new(sample_rate, channels).unwrap();
+        let shared_samples = &ValuesPtr(&mut *samples);
 
-        for raw_packet in packets.iter() {
-            let data_start = calc_frame_size * raw_packet.frame_offset;
+        packets
+            .par_iter()
+            .for_each(|raw_packet| {
+                let mut decoder = Decoder::new(sample_rate, channels).unwrap();
+                let data_start = calc_frame_size * raw_packet.frame_offset;
 
-            let buffer = &mut samples[data_start..(data_start + calc_frame_size)];
-            decoder.decode(Some(raw_packet.data), buffer, false).unwrap();
-        }
+                unsafe {
+                    let samples = &mut *shared_samples.0;
+
+                    let buffer = &mut samples[data_start..(data_start + calc_frame_size)];
+                    decoder.decode(Some(raw_packet.data), buffer, false).unwrap();
+                }
+            });
 
         samples
     }
