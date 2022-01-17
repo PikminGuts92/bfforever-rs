@@ -7,7 +7,7 @@ pub use errors::*;
 
 pub trait Reader : Read + Seek { }
 
-pub struct ChunkInfo {
+struct ChunkInfo {
     pub offset: u64,
     pub size: u64,
 }
@@ -19,7 +19,7 @@ pub struct RiffReader<T> where T : Reader {
 }
 
 impl<T> RiffReader<T> where T : Reader {
-    pub fn new(mut reader: T) -> Result<Self, ReadRiffError> {
+    pub fn new(reader: T) -> Result<Self, ReadRiffError> {
         let mut riff_reader = Self {
             reader,
             big_endian: false,
@@ -30,5 +30,11 @@ impl<T> RiffReader<T> where T : Reader {
         riff_reader.read_chunk_info()?;
 
         Ok(riff_reader)
+    }
+
+    pub fn read_chunks(&mut self) -> Result<(), ReadRiffError> {
+        
+        
+        Ok(())
     }
 }
