@@ -6,6 +6,6 @@ edition = "2021"
 
 [dependencies]
 bfforever = { path = "../bfforever" }
-clap = { version = "3.1.6", features = ["derive"] }
-log = "0.4.14"
-simplelog = "0.11.2"
+clap = { version = "3.2.5", features = ["derive"] }
+log = "0.4.17"
+simplelog = "0.12.0"
