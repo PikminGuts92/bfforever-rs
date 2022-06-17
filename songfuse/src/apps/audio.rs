@@ -27,7 +27,7 @@ impl SubApp for AudioApp {
         let mut celt_audio = Celt::open(&self.input_path);
         celt_audio.decrypt();
 
-        if self.input_path.ends_with(".clt") {
+        if self.output_path.ends_with(".clt") {
             // Save as decrypted .clt
             celt_audio.save(&self.output_path);
         } else {
