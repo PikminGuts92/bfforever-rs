@@ -13,6 +13,12 @@ struct ChunkInfo {
     pub size: u64,
 }
 
+impl ChunkInfo {
+    pub fn get_id_as_str<'a>(&'a self) -> Option<&'a str> {
+        std::str::from_utf8(&self.id).ok()
+    }
+}
+
 pub struct RiffReader<T> where T : Reader {
     reader: T,
     big_endian: bool,

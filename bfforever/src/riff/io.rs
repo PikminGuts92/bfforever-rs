@@ -12,7 +12,7 @@ impl<T> RiffReader<T> where T : Reader {
         self.big_endian = match &buffer {
             MAGIC_RIFF => false,
             MAGIC_RIFF_R => true,
-            _ => return Err(ReadRiffError::InvalidMagic { magic: buffer.to_owned()  }),
+            _ => return Err(ReadRiffError::InvalidMagic { magic: buffer.to_owned() }),
         };
 
         Ok(())
