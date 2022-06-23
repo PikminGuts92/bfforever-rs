@@ -29,13 +29,20 @@ impl<T> RiffReader<T> where T : Reader {
                 break;
             }
 
-            self.reader.seek(SeekFrom::Current(4))?; // Skip id...
+            let mut id_buf = [0u8; 4];
+            self.reader.read_exact(&mut id_buf)?;
             let chunk_size = self.read_u32()? as u64;
+
+            if self.big_endian {
+                // Reverse bytes
+                id_buf.reverse();
+            }
 
             // Skip chunk data
             self.reader.seek(SeekFrom::Current(chunk_size as i64))?;
 
             self.chunks.push(ChunkInfo {
+                id: id_buf,
                 offset: chunk_pos,
                 size: chunk_size
             });

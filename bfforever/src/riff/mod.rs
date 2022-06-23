@@ -8,6 +8,7 @@ pub use errors::*;
 pub trait Reader : Read + Seek { }
 
 struct ChunkInfo {
+    pub id: [u8; 4],
     pub offset: u64,
     pub size: u64,
 }
