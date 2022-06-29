@@ -22,20 +22,42 @@ impl ChunkInfo {
 pub struct RiffReader<T> where T : Reader {
     reader: T,
     big_endian: bool,
+    fourcc: Option<[u8; 4]>,
     chunks: Vec<ChunkInfo>,
 }
 
 impl<T> RiffReader<T> where T : Reader {
     pub fn new(reader: T) -> Result<Self, ReadRiffError> {
+        RiffReader::read(reader, true)
+    }
+
+    pub fn new_without_fourcc(reader: T) -> Result<Self, ReadRiffError> {
+        // BF riffs lack fourcc
+        RiffReader::read(reader, false)
+    }
+
+    fn read(reader: T, read_fourcc: bool) -> Result<Self, ReadRiffError> {
         let mut riff_reader = Self {
             reader,
             big_endian: false,
+            fourcc: None,
             chunks: Vec::new()
         };
 
         riff_reader.read_endian()?;
-        riff_reader.read_chunk_info()?;
 
+        if read_fourcc {
+            let mut fourcc = riff_reader.read_bytes()?;
+
+            if riff_reader.big_endian {
+                // Reverse bytes
+                fourcc.reverse();
+            }
+
+            riff_reader.fourcc = Some(fourcc);
+        }
+
+        riff_reader.read_chunk_info()?;
         Ok(riff_reader)
     }
 

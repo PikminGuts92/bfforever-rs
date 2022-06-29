@@ -29,8 +29,7 @@ impl<T> RiffReader<T> where T : Reader {
                 break;
             }
 
-            let mut id_buf = [0u8; 4];
-            self.reader.read_exact(&mut id_buf)?;
+            let mut id_buf = self.read_bytes()?;
             let chunk_size = self.read_u32()? as u64;
 
             if self.big_endian {
@@ -59,5 +58,12 @@ impl<T> RiffReader<T> where T : Reader {
             true => u32::from_be_bytes(buffer),
             _ => u32::from_le_bytes(buffer)
         })
+    }
+
+    pub fn read_bytes<const N: usize>(&mut self) -> Result<[u8; N], ReadRiffError> {
+        let mut buffer = [0u8; N];
+        self.reader.read_exact(&mut buffer)?;
+
+        Ok(buffer)
     }
 }
