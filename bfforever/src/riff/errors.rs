@@ -7,6 +7,10 @@ pub enum ReadRiffError {
     InvalidMagic {
         magic: [u8; 4]
     },
+    #[error("Chunk index {index} is out of range")]
+    InvalidChunkIndex {
+        index: usize
+    },
     #[error("IO Error: {io_error}")]
     IOError {
         io_error: IOError

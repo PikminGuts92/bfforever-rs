@@ -1,6 +1,6 @@
 mod errors;
 mod io;
-use std::io::{Read, Seek, Write};
+use std::io::{Read, Seek, SeekFrom, Write};
 
 use io::*;
 pub use errors::*;
@@ -16,6 +16,22 @@ struct ChunkInfo {
 impl ChunkInfo {
     pub fn get_id_as_str<'a>(&'a self) -> Option<&'a str> {
         std::str::from_utf8(&self.id).ok()
+    }
+
+    pub fn get_chunk_offset(&self) -> u64 {
+        self.offset
+    }
+
+    pub fn get_data_offset(&self) -> u64 {
+        self.offset + 8
+    }
+
+    pub fn get_chunk_size(&self) -> u64 {
+        self.size + 8
+    }
+
+    pub fn get_data_size(&self) -> u64 {
+        self.size
     }
 }
 
@@ -65,5 +81,36 @@ impl<T> RiffReader<T> where T : Reader {
         
         
         Ok(())
+    }
+
+    pub fn read_chunk<F: FnMut()>(&mut self, index: usize, callback: F) -> Result<(), ReadRiffError> {
+        let (offset, size) = {
+            let info = self
+                .chunks
+                .get(index)
+                .ok_or(ReadRiffError::InvalidChunkIndex { index })?;
+
+            (info.get_chunk_offset(), info.get_chunk_size())
+        };
+
+        self.reader.seek(SeekFrom::Start(offset))?;
+
+        // TODO: Setup callback
+
+        Ok(())
+    }
+
+    pub fn has_fourcc(&self) -> bool {
+        self.fourcc.is_some()
+    }
+
+    pub fn get_fourcc_as_str<'a>(&'a self) -> Option<&'a str> {
+        self.fourcc
+            .as_ref()
+            .and_then(|fcc| std::str::from_utf8(fcc).ok())
+    }
+
+    pub fn get_chunk_count(&self) -> usize {
+        self.chunks.len()
     }
 }
