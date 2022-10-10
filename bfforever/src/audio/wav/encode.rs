@@ -23,7 +23,7 @@ impl<'a> AudioEncoder for WavEncoder<'a> {
         let mut out_file = create_new_file(out_path).unwrap();
 
         let header = Header::new(WAV_FORMAT_PCM, self.channels, self.sample_rate, 16);
-        let bit_data = self.data.to_owned().to_vec().into(); // Ugh... I hate this so much...
+        let bit_data = self.data.to_owned().into(); // Ugh... I hate this so much...
 
         wav_write(header, &bit_data, &mut out_file).unwrap();
     }
