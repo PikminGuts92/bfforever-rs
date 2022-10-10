@@ -3,13 +3,13 @@ use crate::io::create_new_file;
 use wav::{Header, WAV_FORMAT_PCM, write as wav_write};
 
 pub struct WavEncoder<'a> {
-    data: &'a Box<[i16]>,
+    data: &'a [i16],
     channels: u16,
     sample_rate: u32
 }
 
 impl<'a> WavEncoder<'a> {
-    pub fn new(data: &'a Box<[i16]>, channels: u16, sample_rate: u32) -> Self {
+    pub fn new(data: &'a [i16], channels: u16, sample_rate: u32) -> Self {
         WavEncoder {
             data,
             channels,
