@@ -1,15 +1,15 @@
 [package]
 name = "bfforever"
-version = "0.1.0"
-authors = ["PikminGuts92"]
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
 
 [dependencies]
 aes = "0.8.1"
 audiopus = "0.2.0"
 cipher = { version = "0.4.3", features = [ "block-padding" ] }
-log = "0.4.17"
+log = { workspace = true }
 nom = "7.1.1"
 rayon = "1.5.3"
-thiserror = "1.0.37"
+thiserror = { workspace = true }
 wav = "1.0.0"

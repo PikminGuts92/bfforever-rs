@@ -1,11 +1,11 @@
 [package]
 name = "songfuse"
-version = "0.1.0"
-authors = ["PikminGuts92"]
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
 
 [dependencies]
 bfforever = { path = "../bfforever" }
-clap = { version = "4.0.11", features = ["derive"] }
-log = "0.4.17"
+clap = { workspace = true }
+log = { workspace = true }
 simplelog = "0.12.0"

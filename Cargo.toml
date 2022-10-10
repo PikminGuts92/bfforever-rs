@@ -3,3 +3,19 @@ members = [
     "bfforever",
     "songfuse"
 ]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["PikminGuts92"]
+edition = "2021"
+
+[workspace.dependencies]
+clap = { version = "4.0.11", features = ["derive"] }
+log = "0.4.17"
+thiserror = "1.0.37"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 'z'  # Optimize for size
+strip = true
