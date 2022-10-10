@@ -10,9 +10,9 @@ const SUPPORTED_EXTS: [&'static str; 1] = [
 
 #[derive(Parser)]
 pub struct AudioApp {
-    #[clap(help = "Path to input audio file (clt/wav)", required = true)]
+    #[arg(help = "Path to input audio file (clt/wav)", required = true)]
     pub input_path: String,
-    #[clap(help = "Path to output audio file (clt/wav)", required = true)]
+    #[arg(help = "Path to output audio file (clt/wav)", required = true)]
     pub output_path: String,
 }
 

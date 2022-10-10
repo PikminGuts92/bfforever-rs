@@ -13,15 +13,15 @@ pub(crate) trait SubApp {
 }
 
 #[derive(Parser)]
-#[clap(name = PKG_NAME, version = VERSION, about = "Use this tool for modding bandfuse", author = PKG_AUTHORS)]
+#[command(name = PKG_NAME, version = VERSION, about = "Use this tool for modding bandfuse", author = PKG_AUTHORS)]
 struct Options {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     commands: SubCommand,
 }
 
 #[derive(Subcommand)]
 enum SubCommand {
-    #[clap(name = "audio", about = "Encode/decode celt audio")]
+    #[command(name = "audio", about = "Encode/decode celt audio")]
     Audio(AudioApp),
 }
 
