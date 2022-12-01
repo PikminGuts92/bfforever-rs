@@ -1,6 +1,6 @@
 mod errors;
 mod io;
-use std::io::{Read, Seek, SeekFrom, Write};
+use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 
 use io::*;
 pub use errors::*;
@@ -60,7 +60,7 @@ impl<T> RiffReader<T> where T : Reader {
             chunks: Vec::new()
         };
 
-        riff_reader.read_endian()?;
+        riff_reader.read_magic()?;
 
         if read_fourcc {
             let mut fourcc = riff_reader.read_bytes()?;
@@ -83,25 +83,33 @@ impl<T> RiffReader<T> where T : Reader {
         Ok(())
     }
 
-    pub fn read_chunk<F: FnMut()>(&mut self, index: usize, callback: F) -> Result<(), ReadRiffError> {
+    pub fn read_chunk(&mut self, index: usize) -> Result<Cursor<Vec<u8>>, ReadRiffError> {
         let (offset, size) = {
             let info = self
                 .chunks
                 .get(index)
                 .ok_or(ReadRiffError::InvalidChunkIndex { index })?;
 
-            (info.get_chunk_offset(), info.get_chunk_size())
+            (info.get_data_offset(), info.get_data_size())
         };
 
         self.reader.seek(SeekFrom::Start(offset))?;
 
-        // TODO: Setup callback
+        // Read data
+        // TODO: Return new object with lazy read functionality?
+        let mut buffer = vec![0u8; size as usize];
+        self.reader.read_exact(&mut buffer).unwrap();
 
-        Ok(())
+        Ok(Cursor::new(buffer))
     }
 
     pub fn has_fourcc(&self) -> bool {
         self.fourcc.is_some()
+    }
+
+    pub fn get_fourcc<'a>(&'a self) -> Option<&'a [u8; 4]> {
+        self.fourcc
+            .as_ref()
     }
 
     pub fn get_fourcc_as_str<'a>(&'a self) -> Option<&'a str> {

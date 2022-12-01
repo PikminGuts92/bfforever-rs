@@ -5,7 +5,7 @@ const MAGIC_RIFF: &[u8; 4] = b"RIFF";
 const MAGIC_RIFF_R: &[u8; 4] = b"FFIR"; // Big endian
 
 impl<T> RiffReader<T> where T : Reader {
-    pub fn read_endian(&mut self) -> Result<(), ReadRiffError> {
+    pub fn read_magic(&mut self) -> Result<(), ReadRiffError> {
         let mut buffer = [0u8; 4];
         self.reader.read(&mut buffer)?;
 
