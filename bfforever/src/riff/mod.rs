@@ -1,9 +1,12 @@
 mod errors;
 mod io;
+mod zobject;
+
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 
 use io::*;
 pub use errors::*;
+pub use zobject::*;
 
 pub trait Reader : Read + Seek { }
 
