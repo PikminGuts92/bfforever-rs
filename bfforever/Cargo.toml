@@ -5,7 +5,7 @@ authors.workspace = true
 edition.workspace = true
 
 [dependencies]
-aes = "0.8.2"
+aes = "0.8.3"
 audiopus = "0.2.0"
 cipher = { version = "0.4.4", features = [ "block-padding" ] }
 log = { workspace = true }

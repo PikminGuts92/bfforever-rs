@@ -10,9 +10,9 @@ authors = ["PikminGuts92"]
 edition = "2021"
 
 [workspace.dependencies]
-clap = { version = "4.1.8", features = ["derive"] }
-log = "0.4.17"
-thiserror = "1.0.39"
+clap = { version = "4.3.10", features = ["derive"] }
+log = "0.4.19"
+thiserror = "1.0.40"
 
 [profile.release]
 codegen-units = 1
