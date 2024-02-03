@@ -2,13 +2,7 @@ use audiopus::coder::Decoder;
 use audiopus::{Channels, MutSignals, SampleRate};
 use audiopus::packet::Packet;
 use crate::audio::AudioDecoder;
-use rayon::prelude::*;
 use super::{Celt, CeltHeader};
-
-struct ValuesPtr<T>(*mut [T]);
-
-unsafe impl<T> Send for ValuesPtr<T> {}
-unsafe impl<T> Sync for ValuesPtr<T> {}
 
 impl AudioDecoder for Celt {
     fn decode(&self) -> Box<[i16]> {
@@ -35,21 +29,14 @@ impl AudioDecoder for Celt {
             _ => Channels::Auto,
         };
 
-        let shared_samples = &ValuesPtr(&mut *samples);
+        let mut decoder = Decoder::new(sample_rate, channels).unwrap();
 
-        packets
-            .par_iter()
-            .for_each(|raw_packet| {
-                let mut decoder = Decoder::new(sample_rate, channels).unwrap();
-                let data_start = calc_frame_size * raw_packet.frame_offset;
+        for raw_packet in packets.iter() {
+            let data_start = calc_frame_size * raw_packet.frame_offset;
 
-                unsafe {
-                    let samples = &mut *shared_samples.0;
-
-                    let buffer = &mut samples[data_start..(data_start + calc_frame_size)];
-                    decoder.decode(Some(raw_packet.data), buffer, false).unwrap();
-                }
-            });
+            let buffer = &mut samples[data_start..(data_start + calc_frame_size)];
+            decoder.decode(Some(raw_packet.data), buffer, false).unwrap();
+        }
 
         samples
     }
