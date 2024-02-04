@@ -1,4 +1,4 @@
-use crate::apps::{SubApp};
+use crate::apps::SubApp;
 use bfforever::audio::*;
 use clap::Parser;
 use log::debug;
