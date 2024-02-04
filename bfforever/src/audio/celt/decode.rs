@@ -1,6 +1,5 @@
 use audiopus::coder::Decoder;
-use audiopus::{Channels, MutSignals, SampleRate};
-use audiopus::packet::Packet;
+use audiopus::{Channels, SampleRate};
 use crate::audio::AudioDecoder;
 use super::{Celt, CeltHeader};
 

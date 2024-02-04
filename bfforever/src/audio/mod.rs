@@ -2,7 +2,7 @@ mod celt;
 mod wav;
 
 pub use celt::*;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 pub use self::wav::*;
 
 pub trait AudioDecoder {

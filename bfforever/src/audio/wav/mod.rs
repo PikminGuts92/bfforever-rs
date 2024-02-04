@@ -2,4 +2,4 @@ mod encode;
 mod io;
 
 pub use encode::*;
-pub(crate) use io::*;
+#[allow(unused_imports)] pub(crate) use io::*;

@@ -3,7 +3,7 @@ mod decode;
 mod io;
 
 pub use crypt::*;
-pub use decode::*;
+#[allow(unused_imports)] pub use decode::*;
 pub use io::IOFile;
 
 #[derive(Clone, Copy)]

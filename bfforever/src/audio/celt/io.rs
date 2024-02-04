@@ -1,12 +1,12 @@
 use crate::io::create_new_file;
-use nom::{Err, IResult, Needed};
+use nom::IResult;
 use nom::bytes::streaming::tag;
-use nom::number::streaming::{le_u8, le_u16, le_u32};
-use nom::sequence::{pair, terminated, tuple};
+use nom::number::streaming::{le_u16, le_u32};
+use nom::sequence::tuple;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::size_of;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use super::{Celt, CeltHeader, Crypt};
 
 pub struct ByteWriter<'a>(&'a mut [u8]);

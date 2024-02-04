@@ -2,4 +2,4 @@ mod common;
 mod dxt;
 
 pub(crate) use common::*;
-pub(crate) use dxt::*;
+#[allow(unused_imports)] pub(crate) use dxt::*;
