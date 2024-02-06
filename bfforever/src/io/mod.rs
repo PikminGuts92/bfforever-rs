@@ -1,5 +1,5 @@
 use std::fs::{create_dir_all, File, remove_file};
-use std::io::Error as IOError;
+use std::io::{Error as IOError, Read, Seek};
 use std::path::Path;
 
 pub fn create_new_file<T: AsRef<Path>>(file_path: T) -> Result<File, IOError> {
@@ -23,4 +23,42 @@ pub fn create_new_file<T: AsRef<Path>>(file_path: T) -> Result<File, IOError> {
     }
 
     File::create(file_path)
+}
+
+pub fn read_u8<T: Read + Seek>(stream: &mut T) -> Result<u8, IOError> {
+    let mut b = [0u8; std::mem::size_of::<u8>()];
+    stream.read(&mut b)?;
+
+    Ok(b[0])
+}
+
+pub fn read_u16_be<T: Read + Seek>(stream: &mut T) -> Result<u16, IOError> {
+    let mut b = [0u8; std::mem::size_of::<u16>()];
+    stream.read_exact(&mut b)?;
+
+    Ok(u16::from_be_bytes(b))
+}
+
+pub fn read_u32_be<T: Read + Seek>(stream: &mut T) -> Result<u32, IOError> {
+    let mut b = [0u8; std::mem::size_of::<u32>()];
+    stream.read_exact(&mut b)?;
+
+    Ok(u32::from_be_bytes(b))
+}
+
+pub fn read_terminated_string_with_size<T: Read + Seek>(stream: &mut T, n: usize) -> Result<String, IOError> {
+    let mut str_buffer = vec![0u8; n];
+    stream.read_exact(&mut str_buffer)?;
+    let mut str = String::from_utf8(str_buffer).unwrap(); // TODO: Handle safely
+
+    // Remove terminating chars
+    while let Some(c) = str.bytes().last() {
+        if c.ne(&b'\0') {
+            break;
+        }
+
+        str.pop();
+    }
+
+    Ok(str)
 }
