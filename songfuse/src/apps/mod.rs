@@ -26,7 +26,7 @@ struct Options {
 enum SubCommand {
     #[command(name = "audio", about = "Encode/decode celt audio")]
     Audio(AudioApp),
-    #[command(name = "texture", about = "Encode/decode texture file")]
+    #[command(name = "texture", about = "Decode texture file")]
     Texture(TextureApp),
 }
 
