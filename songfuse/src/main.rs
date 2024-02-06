@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 mod apps;
+
 use apps::SongFuseTool;
 use simplelog::*;
 

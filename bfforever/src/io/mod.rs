@@ -1,3 +1,6 @@
+mod file;
+
+pub use file::*;
 use std::fs::{create_dir_all, File, remove_file};
 use std::io::{Error as IOError, Read, Seek};
 use std::path::Path;
@@ -49,16 +52,16 @@ pub fn read_u32_be<T: Read + Seek>(stream: &mut T) -> Result<u32, IOError> {
 pub fn read_terminated_string_with_size<T: Read + Seek>(stream: &mut T, n: usize) -> Result<String, IOError> {
     let mut str_buffer = vec![0u8; n];
     stream.read_exact(&mut str_buffer)?;
-    let mut str = String::from_utf8(str_buffer).unwrap(); // TODO: Handle safely
 
     // Remove terminating chars
-    while let Some(c) = str.bytes().last() {
-        if c.ne(&b'\0') {
-            break;
-        }
+    let str_length = str_buffer
+        .iter()
+        .enumerate()
+        .find(|(_, c)| c.eq(&&b'\0'))
+        .map(|(i, _)| i)
+        .unwrap_or_default();
+    str_buffer.truncate(str_length);
 
-        str.pop();
-    }
-
+    let str = String::from_utf8(str_buffer).unwrap(); // TODO: Handle safely
     Ok(str)
 }

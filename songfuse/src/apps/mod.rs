@@ -1,7 +1,10 @@
 use clap::{Parser, Subcommand};
 
 mod audio;
+mod texture;
+
 pub use self::audio::*;
+pub use self::texture::*;
 
 // From Cargo.toml
 const PKG_AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
@@ -23,6 +26,8 @@ struct Options {
 enum SubCommand {
     #[command(name = "audio", about = "Encode/decode celt audio")]
     Audio(AudioApp),
+    #[command(name = "texture", about = "Encode/decode texture file")]
+    Texture(TextureApp),
 }
 
 pub struct SongFuseTool {
@@ -39,6 +44,7 @@ impl SongFuseTool {
     pub fn run(&mut self) {
         match &mut self.options.commands {
             SubCommand::Audio(app) => app.process(),
+            SubCommand::Texture(app) => app.process(),
         }
     }
 }
