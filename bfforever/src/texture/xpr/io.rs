@@ -120,6 +120,7 @@ impl Texture2D {
         let format = match read_u8(stream)? {
             0x52 => TextureFormat::DXT1,
             0x54 => TextureFormat::DXT5,
+            // 0x86 => TextureFormat::Raw,
             f @ _ => {
                 return Err(Texture2DReadError::UnsupportedTextureFormat { format: f })
             }

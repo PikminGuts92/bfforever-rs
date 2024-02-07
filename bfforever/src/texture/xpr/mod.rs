@@ -10,7 +10,8 @@ use crate::texture::decode_dx_image;
 #[derive(Debug)]
 pub enum TextureFormat {
     DXT1,
-    DXT5
+    DXT5,
+    Raw
 }
 
 #[derive(Debug)]
@@ -48,6 +49,11 @@ impl Texture2D {
         let (encoding, bpb, bpp) = match self.format {
             TextureFormat::DXT1 => (DXGI_Encoding::DXGI_FORMAT_BC1_UNORM, 8, 4),
             TextureFormat::DXT5 => (DXGI_Encoding::DXGI_FORMAT_BC3_UNORM, 16, 8),
+            TextureFormat::Raw => {
+                let rgba_length = rgba.len();
+                rgba.copy_from_slice(&self.data[..rgba_length]);
+                return rgba;
+            }
         };
 
         let untiled_img = untile_texture(&self.data, self.width, self.width, self.height, self.height, 4, 4, bpb);
