@@ -1,12 +1,10 @@
 mod errors;
 mod io;
-mod zobject;
 
 use std::io::{Cursor, Read, Seek, SeekFrom};
 
 #[allow(unused_imports)] use io::*;
 pub use errors::*;
-#[allow(unused_imports)] pub use zobject::*;
 
 pub trait Reader : Read + Seek { }
 

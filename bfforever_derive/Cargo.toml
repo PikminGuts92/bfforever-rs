@@ -1,0 +1,13 @@
+[package]
+name = "bfforever_derive"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.78"
+quote = "1.0.35"
+syn = { version = "2.0.48", default-features = false, features = [ "clone-impls", "derive", "parsing", "printing", "proc-macro" ] }

@@ -1,9 +1,11 @@
 mod file;
+mod zobject;
 
 pub use file::*;
 use std::fs::{create_dir_all, File, remove_file};
 use std::io::{Error as IOError, Read, Seek};
 use std::path::Path;
+#[allow(unused_imports)] pub use zobject::*;
 
 pub fn create_new_file<T: AsRef<Path>>(file_path: T) -> Result<File, IOError> {
     let file_path = file_path.as_ref();

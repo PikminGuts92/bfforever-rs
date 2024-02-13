@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "bfforever",
+    "bfforever_derive",
     "songfuse"
 ]
 resolver = "2"
