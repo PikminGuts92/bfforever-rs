@@ -98,6 +98,7 @@ version = "0.0.1"
 dependencies = [
  "aes",
  "audiopus",
+ "bfforever_derive",
  "cipher",
  "image",
  "log",

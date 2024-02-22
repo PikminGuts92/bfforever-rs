@@ -1,5 +1,7 @@
+use bfforever_derive::ZObjectReader;
 use crate::{HKey, SKey};
 
+#[derive(ZObjectReader)]
 pub struct Song {
     pub title: SKey,
     pub artist: SKey,

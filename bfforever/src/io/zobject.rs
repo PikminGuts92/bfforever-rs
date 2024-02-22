@@ -1,11 +1,12 @@
 use crate::{HKey, StringKey, SKey};
+use std::io::{Error as IOError, Read, Seek, Write};
 
 pub trait ZObjectReader {
-    fn read() -> Self;
+    fn read<T: Read + Seek>(&mut self, reader: &mut T) -> Result<(), IOError>;
 }
 
 pub trait ZObjectWriter {
-    fn write();
+    fn write<T: Seek + Write>(writer: &mut T) -> Result<(), IOError>;
 }
 
 pub trait ZObjectData {
